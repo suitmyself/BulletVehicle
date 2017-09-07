@@ -1,0 +1,253 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8D483708-D65C-425D-9E27-30F6E62D2CBF}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>BulletVehicle</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v100</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v100</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v100</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v100</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>include\src;include;include\ThirdPartyLibs\Glew;$(IncludePath)</IncludePath>
+    <LibraryPath>lib\debug;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>include\src;include;include\ThirdPartyLibs\Glew;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>include\src;include;include\ThirdPartyLibs\Glew;$(IncludePath)</IncludePath>
+    <LibraryPath>lib\release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>include\src;include;include\ThirdPartyLibs\Glew;$(IncludePath)</IncludePath>
+    <LibraryPath>lib\release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG=1;B3_USE_STANDALONE_EXAMPLE;GLEW_STATIC</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Bullet2FileLoader_vs2010_debug.lib;
+Bullet3Collision_vs2010_debug.lib;
+Bullet3Common_vs2010_debug.lib
+;Bullet3Dynamics_vs2010_debug.lib;
+Bullet3Geometry_vs2010_debug.lib;
+Bullet3OpenCL_clew_vs2010_debug.lib
+;BulletCollision_vs2010_debug.lib;
+BulletDynamics_vs2010_debug.lib;
+BulletExampleBrowserLib_vs2010_debug.lib
+;BulletFileLoader_vs2010_debug.lib
+;BulletInverseDynamics_vs2010_debug.lib;
+BulletInverseDynamicsUtils_vs2010_debug.lib
+;BulletSoftBody_vs2010_debug.lib;
+BulletWorldImporter_vs2010_debug.lib;
+BussIK_vs2010_debug.lib
+;ConvexDecomposition_vs2010_debug.lib;
+enet_vs2010_debug.lib;
+gtest_vs2010_debug.lib;
+gwen_vs2010_debug.lib;
+HACD_vs2010_debug.lib;
+LinearMath_vs2010_debug.lib;
+OpenGL_Window_vs2010_debug.lib;
+vhacd_vs2010_debug.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG=1;B3_USE_STANDALONE_EXAMPLE;GLEW_STATIC</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Bullet2FileLoader_vs2010_debug.lib;
+Bullet3Collision_vs2010_debug.lib;
+Bullet3Common_vs2010_debug.lib
+;Bullet3Dynamics_vs2010_debug.lib;
+Bullet3Geometry_vs2010_debug.lib;
+Bullet3OpenCL_clew_vs2010_debug.lib
+;BulletCollision_vs2010_debug.lib;
+BulletDynamics_vs2010_debug.lib;
+BulletExampleBrowserLib_vs2010_debug.lib
+;BulletFileLoader_vs2010_debug.lib
+;BulletInverseDynamics_vs2010_debug.lib;
+BulletInverseDynamicsUtils_vs2010_debug.lib
+;BulletSoftBody_vs2010_debug.lib;
+BulletWorldImporter_vs2010_debug.lib;
+BussIK_vs2010_debug.lib
+;ConvexDecomposition_vs2010_debug.lib;
+enet_vs2010_debug.lib;
+gtest_vs2010_debug.lib;
+gwen_vs2010_debug.lib;
+HACD_vs2010_debug.lib;
+LinearMath_vs2010_debug.lib;
+OpenGL_Window_vs2010_debug.lib;
+vhacd_vs2010_debug.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>B3_USE_STANDALONE_EXAMPLE;GLEW_STATIC</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Bullet2FileLoader_vs2010.lib;
+Bullet3Collision_vs2010.lib
+;Bullet3Common_vs2010.lib;
+Bullet3Dynamics_vs2010.lib;
+Bullet3Geometry_vs2010.lib;
+Bullet3OpenCL_clew_vs2010.lib;
+BulletCollision_vs2010.lib
+;BulletDynamics_vs2010.lib;
+BulletExampleBrowserLib_vs2010.lib;
+BulletFileLoader_vs2010.lib
+;BulletInverseDynamics_vs2010.lib;
+BulletInverseDynamicsUtils_vs2010.lib;
+BulletSoftBody_vs2010.lib
+;BulletWorldImporter_vs2010.lib;
+BussIK_vs2010.lib
+;ConvexDecomposition_vs2010.lib;
+enet_vs2010.lib
+;gtest_vs2010.lib;
+gwen_vs2010.lib;
+HACD_vs2010.lib;
+LinearMath_vs2010.lib
+;OpenGL_Window_vs2010.lib;
+vhacd_vs2010.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>B3_USE_STANDALONE_EXAMPLE;GLEW_STATIC</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Bullet2FileLoader_vs2010.lib;
+Bullet3Collision_vs2010.lib
+;Bullet3Common_vs2010.lib;
+Bullet3Dynamics_vs2010.lib;
+Bullet3Geometry_vs2010.lib;
+Bullet3OpenCL_clew_vs2010.lib;
+BulletCollision_vs2010.lib
+;BulletDynamics_vs2010.lib;
+BulletExampleBrowserLib_vs2010.lib;
+BulletFileLoader_vs2010.lib
+;BulletInverseDynamics_vs2010.lib;
+BulletInverseDynamicsUtils_vs2010.lib;
+BulletSoftBody_vs2010.lib
+;BulletWorldImporter_vs2010.lib;
+BussIK_vs2010.lib
+;ConvexDecomposition_vs2010.lib;
+enet_vs2010.lib
+;gtest_vs2010.lib;
+gwen_vs2010.lib;
+HACD_vs2010.lib;
+LinearMath_vs2010.lib
+;OpenGL_Window_vs2010.lib;
+vhacd_vs2010.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\BasicExample.cpp" />
+    <ClCompile Include="src\main_opengl_single_example.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\BasicExample.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
