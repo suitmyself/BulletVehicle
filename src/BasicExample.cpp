@@ -19,11 +19,8 @@ subject to the following restrictions:
 ///A function that maps user input (throttle) into torque/force applied on the wheels
 ///with gears etc.
 #include "btBulletDynamicsCommon.h"
-#include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
-
 
 #include "BulletDynamics/MLCPSolvers/btDantzigSolver.h"
-#include "BulletDynamics/MLCPSolvers/btSolveProjectedGaussSeidel.h"
 #include "BulletDynamics/MLCPSolvers/btMLCPSolver.h"
 
 class btVehicleTuning;
@@ -38,7 +35,6 @@ class btCollisionShape;
 #include "LinearMath/btAlignedObjectArray.h"
 #include "btBulletCollisionCommon.h"
 #include "../CommonInterfaces/CommonGUIHelperInterface.h"
-#include "../CommonInterfaces/CommonRenderInterface.h"
 #include "../CommonInterfaces/CommonWindowInterface.h"
 #include "../CommonInterfaces/CommonGraphicsAppInterface.h"
 
@@ -587,7 +583,7 @@ void ForkLiftDemo::renderScene()
 
     for (int i = 0; i<m_vehicle->getNumWheels(); i++)
     {
-        //synchronize the wheels with the (interpolated) chassis worldtransform
+        //synchronize the wheels with the (interpolated) chassis world transform
         m_vehicle->updateWheelTransform(i, true);
 
         CommonRenderInterface* renderer = m_guiHelper->getRenderInterface();
