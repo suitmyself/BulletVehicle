@@ -245,11 +245,13 @@ vhacd_vs2010_x64_release.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</A
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\BasicExample.cpp" />
+    <ClCompile Include="src\Car.cpp" />
+    <ClCompile Include="src\CarSimulation.cpp" />
     <ClCompile Include="src\main_opengl_single_example.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\BasicExample.h" />
+    <ClInclude Include="src\Car.h" />
+    <ClInclude Include="src\CarSimulation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

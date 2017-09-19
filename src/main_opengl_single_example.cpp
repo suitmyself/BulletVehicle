@@ -1,40 +1,26 @@
-/*
-Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2015 Google Inc. http://bulletphysics.org
-
-This software is provided 'as-is', without any express or implied warranty.
-In no event will the authors be held liable for any damages arising from the use of this software.
-Permission is granted to anyone to use this software for any purpose, 
-including commercial applications, and to alter it and redistribute it freely, 
-subject to the following restrictions:
-
-1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
-2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
-3. This notice may not be removed or altered from any source distribution.
-*/
-
-
-
-#include "CommonInterfaces/CommonExampleInterface.h"
-#include "CommonInterfaces/CommonGUIHelperInterface.h"
+#include <stdio.h>
 #include "Utils/b3Clock.h"
 
-
-
+#include "Car.h"
+#include "CarSimulation.h"
 
 #include "OpenGLWindow/SimpleOpenGL3App.h"
-#include <stdio.h>
+#include "CommonInterfaces/CommonExampleInterface.h"
+#include "CommonInterfaces/CommonGUIHelperInterface.h"
 #include "ExampleBrowser/OpenGLGuiHelper.h"
-#include "ExampleBrowser/OpenGLExampleBrowser.h"
 
-CommonExampleInterface*    example;
-int gSharedMemoryKey=-1;
 
-b3MouseMoveCallback prevMouseMoveCallback = 0;
+//CommonExampleInterface * example;
+CarSimulation * example;
+
+int gSharedMemoryKey = -1;
+
+b3MouseMoveCallback prevMouseMoveCallback = nullptr;
+b3MouseButtonCallback prevMouseButtonCallback = nullptr;
+
 static void OnMouseMove( float x, float y)
 {
-	bool handled = false; 
-	handled = example->mouseMoveCallback(x,y); 	 
+	bool handled = example->mouseMoveCallback(x,y); 	 
 	if (!handled)
 	{
 		if (prevMouseMoveCallback)
@@ -42,11 +28,9 @@ static void OnMouseMove( float x, float y)
 	}
 }
 
-b3MouseButtonCallback prevMouseButtonCallback  = 0;
-static void OnMouseDown(int button, int state, float x, float y) {
-	bool handled = false;
-
-	handled = example->mouseButtonCallback(button, state, x,y); 
+static void OnMouseDown(int button, int state, float x, float y) 
+{
+	bool handled = example->mouseButtonCallback(button, state, x,y); 
 	if (!handled)
 	{
 		if (prevMouseButtonCallback )
@@ -56,17 +40,19 @@ static void OnMouseDown(int button, int state, float x, float y) {
 
 class LessDummyGuiHelper : public DummyGUIHelper
 {
-	CommonGraphicsApp* m_app;
 public:
-	virtual CommonGraphicsApp* getAppInterface()
+    LessDummyGuiHelper(CommonGraphicsApp * app)
+        :m_app(app)
+    {
+    }
+
+	virtual CommonGraphicsApp * getAppInterface()
 	{
 		return m_app;
 	}
 
-	LessDummyGuiHelper(CommonGraphicsApp* app)
-		:m_app(app)
-	{
-	}
+private:
+    CommonGraphicsApp * m_app;
 };
 
 void MyKeyboardCallback(int key, int state)
@@ -87,16 +73,20 @@ int main(int argc, char* argv[])
     app->m_window->setKeyboardCallback(MyKeyboardCallback);
 	
 	OpenGLGuiHelper gui(app,false);
-	//LessDummyGuiHelper gui(app);
-	//DummyGUIHelper gui;
-
 	CommonExampleOptions options(&gui);
+
+	//example = StandaloneExampleCreateFunc(options);
+    example = new CarSimulation(&gui);
+
+    example->addDefaultFloor();
+    example->addDefaultRigidBody();
 	
+    Car fir_car;
+    fir_car.configToCarSimulation(example, btVector3(0, 0, 0));
+    Car sec_car;
+    sec_car.configToCarSimulation(example, btVector3(10, 0, 0));
 
-	example = StandaloneExampleCreateFunc(options);
-	example->processCommandLineArgs(argc, argv);
-
-	example->initPhysics();
+    example->generateGraphicsObjects();
 	example->resetCamera();
 	
 	b3Clock clock;
@@ -122,9 +112,10 @@ int main(int argc, char* argv[])
 		app->swapBuffer();
 	} while (!app->m_window->requestedExit());
 
-	example->exitPhysics();
+	example->clear();
 	delete example;
 	delete app;
+
 	return 0;
 }
 

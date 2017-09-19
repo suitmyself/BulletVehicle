@@ -833,7 +833,7 @@ void ForkLiftDemo::resetForklift()
 }
 
 
-bool	ForkLiftDemo::keyboardCallback(int key, int state)
+bool ForkLiftDemo::keyboardCallback(int key, int state)
 {
     bool handled = false;
     bool isShiftPressed = m_guiHelper->getAppInterface()->m_window->isModifierKeyPressed(B3G_SHIFT);
