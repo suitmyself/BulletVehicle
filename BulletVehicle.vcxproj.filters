@@ -15,15 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\BasicExample.cpp">
+    <ClCompile Include="src\main_opengl_single_example.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\main_opengl_single_example.cpp">
+    <ClCompile Include="src\CarSimulation.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Car.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\BasicExample.h">
+    <ClInclude Include="src\CarSimulation.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Car.h">
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>
