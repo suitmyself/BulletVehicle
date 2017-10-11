@@ -2,7 +2,7 @@
 #include "CarSimulation.h"
 
 CarSimulation::CarSimulation(GUIHelperInterface* helper)
-    :m_guiHelper(helper)
+    :gui_helper(helper)
 {
     //helper->setUpAxis(1);
     this->initDynamicsWorld();
@@ -13,48 +13,183 @@ CarSimulation::~CarSimulation()
     //clear();
 }
 
-void CarSimulation::initDynamicsWorld()
-{
-    m_collisionConfiguration = new btDefaultCollisionConfiguration();
-    m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
-
-    btVector3 worldMin(-1000, -1000, -1000);
-    btVector3 worldMax(1000, 1000, 1000);
-    m_overlappingPairCache = new btAxisSweep3(worldMin, worldMax);
-
-    if (useMCLPSolver)
-    {
-        btDantzigSolver* mlcp = new btDantzigSolver();
-        //btSolveProjectedGaussSeidel* mlcp = new btSolveProjectedGaussSeidel;
-        btMLCPSolver* solver = new btMLCPSolver(mlcp);
-        m_constraintSolver = solver;
-    }
-    else
-        m_constraintSolver = new btSequentialImpulseConstraintSolver();
-
-    m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_constraintSolver, m_collisionConfiguration);
-
-    if (useMCLPSolver)
-        m_dynamicsWorld->getSolverInfo().m_minimumSolverBatchSize = 1;//for direct solver it is better to have a small A matrix
-    else
-        m_dynamicsWorld->getSolverInfo().m_minimumSolverBatchSize = 128;//for direct solver, it is better to solve multiple objects together, small batches have high overhead
-
-    m_dynamicsWorld->getSolverInfo().m_globalCfm = 0.00001;
-    //m_dynamicsWorld->setGravity(btVector3(0,0,0));
-
-    m_guiHelper->createPhysicsDebugDrawer(m_dynamicsWorld);
-    int upAxis = 1;
-    m_guiHelper->setUpAxis(upAxis);
-}
-
 btDiscreteDynamicsWorld * CarSimulation::getDynamicsWorld()
 {
-    return m_dynamicsWorld;
+    return dynamics_world;
 }
 
 GUIHelperInterface * CarSimulation::getGuiHelper()
 {
-    return this->m_guiHelper;
+    return this->gui_helper;
+}
+
+void CarSimulation::addCar(Car * car)
+{
+    cars.push_back(car);
+}
+
+void CarSimulation::addDefaultFloor()
+{
+    btVector3 groundExtents(50, 50, 50);
+
+    int upAxis = 1;
+    groundExtents[upAxis] = 3;
+
+    btCollisionShape* groundShape = new btBoxShape(groundExtents);
+    collision_shapes.push_back(groundShape);
+
+
+    btTransform tr;
+    tr.setIdentity();
+    tr.setOrigin(btVector3(0, -3, 0));
+
+    //create ground object
+    localCreateRigidBody(0, tr, groundShape);
+}
+
+void CarSimulation::addDefaultRigidBody()
+{
+    btCompoundShape* loadCompound = new btCompoundShape();
+    collision_shapes.push_back(loadCompound);
+
+    btCollisionShape* loadShapeA = new btBoxShape(btVector3(2.0f, 0.5f, 0.5f));
+    collision_shapes.push_back(loadShapeA);
+    btTransform loadTrans;
+    loadTrans.setIdentity();
+    loadCompound->addChildShape(loadTrans, loadShapeA);
+
+    btCollisionShape* loadShapeB = new btBoxShape(btVector3(0.1f, 1.0f, 1.0f));
+    collision_shapes.push_back(loadShapeB);
+    loadTrans.setIdentity();
+    loadTrans.setOrigin(btVector3(2.1f, 0.0f, 0.0f));
+    loadCompound->addChildShape(loadTrans, loadShapeB);
+
+    btCollisionShape* loadShapeC = new btBoxShape(btVector3(0.1f, 1.0f, 1.0f));
+    collision_shapes.push_back(loadShapeC);
+    loadTrans.setIdentity();
+    loadTrans.setOrigin(btVector3(-2.1f, 0.0f, 0.0f));
+    loadCompound->addChildShape(loadTrans, loadShapeC);
+
+
+    loadTrans.setIdentity();
+    btVector3 load_start_pos = btVector3(0.0f, 3.5f, 7.0f);
+    loadTrans.setOrigin(load_start_pos);
+
+    //the sequential impulse solver has difficulties dealing with large mass ratios (differences), between loadMass and the fork parts
+    btScalar loadMass = 350.f;
+
+    //this should work fine for the SI solver
+    //btScalar loadMass = 10.f; 
+
+    localCreateRigidBody(loadMass, loadTrans, loadCompound);
+}
+
+btIndexedMesh CarSimulation::constructIndexMesh(const float * vertices, int vcount, const unsigned int * faces, int fcount)
+{
+    assert(fcount % 3 == 0);
+
+    btIndexedMesh indexed_mesh;
+
+    indexed_mesh.m_numTriangles = fcount / 3;
+    indexed_mesh.m_triangleIndexBase = (const unsigned char *)faces;
+    indexed_mesh.m_triangleIndexStride = sizeof(unsigned int) * 3;
+
+    indexed_mesh.m_numVertices = vcount / 3;
+    indexed_mesh.m_vertexBase = (const unsigned char *)vertices;
+    indexed_mesh.m_vertexStride = sizeof(float) * 3;
+    indexed_mesh.m_vertexType = PHY_FLOAT;
+
+    return indexed_mesh;
+}
+
+int CarSimulation::addMeshRigidBody(const std::vector<float> & vertex_data, const std::vector<unsigned int> & face_index, const btTransform & transform, float mass)
+{
+    return this->addMeshRigidBody(vertex_data.data(), vertex_data.size(), face_index.data(), face_index.size(), transform, mass);
+}
+
+int CarSimulation::addMeshRigidBody(const float * vertex_data, unsigned int vcount, const unsigned int * face_index, unsigned int fcount, const btTransform & transform, float mass)
+{
+    btIndexedMesh indexed_mesh = this->constructIndexMesh(vertex_data, vcount, face_index, fcount);
+
+    btTriangleIndexVertexArray * vertex_array = new btTriangleIndexVertexArray();
+    vertex_array->addIndexedMesh(indexed_mesh);
+
+    btBvhTriangleMeshShape * mesh_shape = new btBvhTriangleMeshShape(vertex_array, true);
+    collision_shapes.push_back(mesh_shape);
+
+    btRigidBody * rigid_body = localCreateRigidBody(mass, transform, mesh_shape);
+    return rigid_body->getUserIndex();
+}
+
+int CarSimulation::addBoxRigidBody(const btVector3 & half_extents, const btTransform & transform, float mass)
+{
+    btCollisionShape * box_shape = new btBoxShape(half_extents);
+    collision_shapes.push_back(box_shape);
+
+    btRigidBody * rigid_body = localCreateRigidBody(mass, transform, box_shape);
+
+    return rigid_body->getUserIndex();
+}
+
+int CarSimulation::addCylinderRigidBody(const btVector3 & half_extents, const btTransform & transform, float mass)
+{
+    btCollisionShape * cylinder_shape = new btCylinderShape(half_extents);
+    collision_shapes.push_back(cylinder_shape);
+
+    btRigidBody * rigid_body = localCreateRigidBody(mass, transform, cylinder_shape);
+
+    return rigid_body->getUserIndex();
+}
+
+int CarSimulation::addSphereRigidBody(float radius, const btTransform & transform, float mass)
+{
+    btCollisionShape * sphere_shape = new btSphereShape(radius);
+    collision_shapes.push_back(sphere_shape);
+
+    btRigidBody * rigid_body = localCreateRigidBody(mass, transform, sphere_shape);
+
+    return rigid_body->getUserIndex();
+}
+
+unsigned int CarSimulation::getCarNum() const
+{
+    return this->cars.size();
+}
+
+std::vector<Car *> & CarSimulation::getCarPtrs()
+{
+    return this->cars;
+}
+
+const std::vector<Car *> & CarSimulation::getCarPtrs() const
+{
+    return this->cars;
+}
+
+std::vector<btTransform> CarSimulation::getCarTransform(unsigned int idx) const
+{
+    return this->cars[idx]->getCarTransform();
+}
+
+std::vector<std::pair<int, btTransform>> CarSimulation::getAllRigidBodyTransforms() const
+{
+    std::vector<std::pair<int, btTransform>> trans;
+    for(int i = 0; i < this->dynamics_world->getNumCollisionObjects(); ++i)
+    {
+        btCollisionObject * obj = this->dynamics_world->getCollisionObjectArray()[i];
+        btRigidBody * rigid_body = btRigidBody::upcast(obj);
+
+        btTransform tr;
+
+        if (rigid_body && rigid_body->getMotionState())
+            rigid_body->getMotionState()->getWorldTransform(tr);
+        else
+            tr = obj->getWorldTransform();
+
+        trans.push_back({ obj->getUserIndex(), tr });
+    }
+
+    return trans;
 }
 
 void CarSimulation::stepSimulation(float deltaTime)
@@ -64,17 +199,17 @@ void CarSimulation::stepSimulation(float deltaTime)
 
     float dt = deltaTime;
 
-    if (m_dynamicsWorld)
+    if (dynamics_world)
     {
         //during idle mode, just run 1 simulation step maximum
         int maxSimSubSteps = 2;
 
         int numSimSteps;
-        numSimSteps = m_dynamicsWorld->stepSimulation(dt, maxSimSubSteps);
+        numSimSteps = dynamics_world->stepSimulation(dt, maxSimSubSteps);
 
-        if (m_dynamicsWorld->getConstraintSolver()->getSolverType() == BT_MLCP_SOLVER)
+        if (dynamics_world->getConstraintSolver()->getSolverType() == BT_MLCP_SOLVER)
         {
-            btMLCPSolver* sol = (btMLCPSolver*)m_dynamicsWorld->getConstraintSolver();
+            btMLCPSolver* sol = (btMLCPSolver*)dynamics_world->getConstraintSolver();
             int numFallbacks = sol->getNumFallbacks();
             if (numFallbacks)
             {
@@ -125,7 +260,7 @@ void CarSimulation::specialKeyboard(int key, int x, int y)
 bool CarSimulation::keyboardCallback(int key, int state)
 {
     bool handled = false;
-    bool isShiftPressed = m_guiHelper->getAppInterface()->m_window->isModifierKeyPressed(B3G_SHIFT);
+    bool isShiftPressed = gui_helper->getAppInterface()->m_window->isModifierKeyPressed(B3G_SHIFT);
 
     for (int i = 0; i < cars.size(); ++i)
         cars[i]->keyboardCallback(key, state, isShiftPressed);
@@ -137,7 +272,7 @@ bool CarSimulation::keyboardCallback(int key, int state)
         case B3G_F7:
         {
             handled = true;
-            btDiscreteDynamicsWorld* world = (btDiscreteDynamicsWorld*)m_dynamicsWorld;
+            btDiscreteDynamicsWorld* world = (btDiscreteDynamicsWorld*)dynamics_world;
             world->setLatencyMotionStateInterpolation(!world->getLatencyMotionStateInterpolation());
             printf("world latencyMotionStateInterpolation = %d\n", world->getLatencyMotionStateInterpolation());
             break;
@@ -146,23 +281,23 @@ bool CarSimulation::keyboardCallback(int key, int state)
         {
             handled = true;
             //switch solver (needs demo restart)
-            useMCLPSolver = !useMCLPSolver;
-            printf("switching to useMLCPSolver = %d\n", useMCLPSolver);
+            use_MCLP_solver = !use_MCLP_solver;
+            printf("switching to useMLCPSolver = %d\n", use_MCLP_solver);
 
-            delete m_constraintSolver;
-            if (useMCLPSolver)
+            delete constraint_solver;
+            if (use_MCLP_solver)
             {
                 btDantzigSolver* mlcp = new btDantzigSolver();
                 //btSolveProjectedGaussSeidel* mlcp = new btSolveProjectedGaussSeidel;
                 btMLCPSolver* sol = new btMLCPSolver(mlcp);
-                m_constraintSolver = sol;
+                constraint_solver = sol;
             }
             else
             {
-                m_constraintSolver = new btSequentialImpulseConstraintSolver();
+                constraint_solver = new btSequentialImpulseConstraintSolver();
             }
 
-            m_dynamicsWorld->setConstraintSolver(m_constraintSolver);
+            dynamics_world->setConstraintSolver(constraint_solver);
 
             //clear();
             //generateGraphicsObjects();
@@ -171,7 +306,7 @@ bool CarSimulation::keyboardCallback(int key, int state)
 
         case B3G_F5:
             handled = true;
-            m_useDefaultCamera = !m_useDefaultCamera;
+            use_default_camera = !use_default_camera;
             break;
         default:
             break;
@@ -191,7 +326,7 @@ bool CarSimulation::mouseButtonCallback(int button, int state, float x, float y)
     return false;
 }
 
-btRigidBody* CarSimulation::localCreateRigidBody(btScalar mass, const btTransform& startTransform, btCollisionShape* shape)
+btRigidBody* CarSimulation::localCreateRigidBody(btScalar mass, const btTransform & startTransform, btCollisionShape* shape)
 {
     btAssert((!shape || shape->getShapeType() != INVALID_SHAPE_PROXYTYPE));
 
@@ -217,7 +352,7 @@ btRigidBody* CarSimulation::localCreateRigidBody(btScalar mass, const btTransfor
     body->setWorldTransform(startTransform);
     #endif
 
-    m_dynamicsWorld->addRigidBody(body);
+    dynamics_world->addRigidBody(body);
     return body;
 }
 
@@ -226,30 +361,35 @@ void CarSimulation::displayCallback()
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
     //optional but useful: debug drawing
-    if (m_dynamicsWorld)
-        m_dynamicsWorld->debugDrawWorld();
+    if (dynamics_world)
+        dynamics_world->debugDrawWorld();
 
-    //	glFlush();
-    //	glutSwapBuffers();
+    //glFlush();
+    //glutSwapBuffers();
 }
 
 void CarSimulation::physicsDebugDraw(int debugFlags)
 {
-    if (m_dynamicsWorld && m_dynamicsWorld->getDebugDrawer())
+    if (dynamics_world && dynamics_world->getDebugDrawer())
     {
-        m_dynamicsWorld->getDebugDrawer()->setDebugMode(debugFlags);
-        m_dynamicsWorld->debugDrawWorld();
+        dynamics_world->getDebugDrawer()->setDebugMode(debugFlags);
+        dynamics_world->debugDrawWorld();
     }
 }
 
 void CarSimulation::renderScene()
 {
-    m_guiHelper->syncPhysicsToGraphics(m_dynamicsWorld);
+    gui_helper->syncPhysicsToGraphics(dynamics_world);
 
     for (int i = 0; i < cars.size(); ++i)
         cars[i]->updateWheelTransformForRender(this);
 
-    m_guiHelper->render(m_dynamicsWorld);
+    gui_helper->render(dynamics_world);
+
+    /*
+    for(int i = 0; i < m_dynamicsWorld->getCollisionObjectArray().size(); ++i)
+        std::cout << "id: " << i << " user_index: " << m_dynamicsWorld->getCollisionObjectArray()[i]->getUserIndex() << std::endl;
+    */
 
     /*
     ATTRIBUTE_ALIGNED16(btScalar) m[16];
@@ -268,70 +408,9 @@ void CarSimulation::renderScene()
     */
 }
 
-void CarSimulation::addCar(Car * car)
-{
-    cars.push_back(car);
-}
-
-void CarSimulation::addDefaultFloor()
-{
-    btVector3 groundExtents(50, 50, 50);
-
-    int upAxis = 1;
-    groundExtents[upAxis] = 3;
-
-    btCollisionShape* groundShape = new btBoxShape(groundExtents);
-    m_collisionShapes.push_back(groundShape);
-
-   
-    btTransform tr;
-    tr.setIdentity();
-    tr.setOrigin(btVector3(0, -3, 0));
-
-    //create ground object
-    localCreateRigidBody(0, tr, groundShape);
-}
-
-void CarSimulation::addDefaultRigidBody()
-{
-    btCompoundShape* loadCompound = new btCompoundShape();
-    m_collisionShapes.push_back(loadCompound);
-
-    btCollisionShape* loadShapeA = new btBoxShape(btVector3(2.0f, 0.5f, 0.5f));
-    m_collisionShapes.push_back(loadShapeA);
-    btTransform loadTrans;
-    loadTrans.setIdentity();
-    loadCompound->addChildShape(loadTrans, loadShapeA);
-
-    btCollisionShape* loadShapeB = new btBoxShape(btVector3(0.1f, 1.0f, 1.0f));
-    m_collisionShapes.push_back(loadShapeB);
-    loadTrans.setIdentity();
-    loadTrans.setOrigin(btVector3(2.1f, 0.0f, 0.0f));
-    loadCompound->addChildShape(loadTrans, loadShapeB);
-
-    btCollisionShape* loadShapeC = new btBoxShape(btVector3(0.1f, 1.0f, 1.0f));
-    m_collisionShapes.push_back(loadShapeC);
-    loadTrans.setIdentity();
-    loadTrans.setOrigin(btVector3(-2.1f, 0.0f, 0.0f));
-    loadCompound->addChildShape(loadTrans, loadShapeC);
-
-
-    loadTrans.setIdentity();
-    m_loadStartPos = btVector3(0.0f, 3.5f, 7.0f);
-    loadTrans.setOrigin(m_loadStartPos);
-
-    //the sequential impulse solver has difficulties dealing with large mass ratios (differences), between loadMass and the fork parts
-    btScalar loadMass = 350.f;
-
-    //this should work fine for the SI solver
-    //btScalar loadMass = 10.f; 
-
-    m_loadBody = localCreateRigidBody(loadMass, loadTrans, loadCompound);
-}
-
 void CarSimulation::generateGraphicsObjects()
 {
-    m_guiHelper->autogenerateGraphicsObjects(m_dynamicsWorld);
+    gui_helper->autogenerateGraphicsObjects(dynamics_world);
 }
 
 void CarSimulation::clear()
@@ -339,9 +418,9 @@ void CarSimulation::clear()
     //cleanup in the reverse order of creation/initialization
 
     //remove the rigid bodies from the dynamics world and delete them
-    for (int i = m_dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
+    for (int i = dynamics_world->getNumCollisionObjects() - 1; i >= 0; i--)
     {
-        btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[i];
+        btCollisionObject* obj = dynamics_world->getCollisionObjectArray()[i];
         btRigidBody* body = btRigidBody::upcast(obj);
         if (body && body->getMotionState())
         {
@@ -349,47 +428,45 @@ void CarSimulation::clear()
             while (body->getNumConstraintRefs())
             {
                 btTypedConstraint* constraint = body->getConstraintRef(0);
-                m_dynamicsWorld->removeConstraint(constraint);
+                dynamics_world->removeConstraint(constraint);
                 delete constraint;
             }
             delete body->getMotionState();
-            m_dynamicsWorld->removeRigidBody(body);
+            dynamics_world->removeRigidBody(body);
         }
         else
         {
-            m_dynamicsWorld->removeCollisionObject(obj);
+            dynamics_world->removeCollisionObject(obj);
         }
         delete obj;
     }
 
     //delete collision shapes
-    for (int j = 0; j < m_collisionShapes.size(); j++)
+    for (int j = 0; j < collision_shapes.size(); j++)
     {
-        btCollisionShape* shape = m_collisionShapes[j];
+        btCollisionShape* shape = collision_shapes[j];
         delete shape;
     }
-    m_collisionShapes.clear();
-
-    delete m_indexVertexArrays;
+    collision_shapes.clear();
 
     //delete dynamics world
-    delete m_dynamicsWorld;
-    m_dynamicsWorld = nullptr;
+    delete dynamics_world;
+    dynamics_world = nullptr;
 
     //delete solver
-    delete m_constraintSolver;
-    m_constraintSolver = nullptr;
+    delete constraint_solver;
+    constraint_solver = nullptr;
 
     //delete broad phase
-    delete m_overlappingPairCache;
-    m_overlappingPairCache = nullptr;
+    delete overlapping_pair_cache;
+    overlapping_pair_cache = nullptr;
 
     //delete dispatcher
-    delete m_dispatcher;
-    m_dispatcher = nullptr;
+    delete dispatcher;
+    dispatcher = nullptr;
 
-    delete m_collisionConfiguration;
-    m_collisionConfiguration = nullptr;
+    delete collision_configuration;
+    collision_configuration = nullptr;
 }
 
 void CarSimulation::resetCamera()
@@ -398,5 +475,39 @@ void CarSimulation::resetCamera()
     float pitch = -45;
     float yaw = 32;
     float targetPos[3] = { -0.33,-0.72,4.5 };
-    m_guiHelper->resetCamera(dist, pitch, yaw, targetPos[0], targetPos[1], targetPos[2]);
+    gui_helper->resetCamera(dist, pitch, yaw, targetPos[0], targetPos[1], targetPos[2]);
+}
+
+void CarSimulation::initDynamicsWorld()
+{
+    collision_configuration = new btDefaultCollisionConfiguration();
+    dispatcher = new btCollisionDispatcher(collision_configuration);
+
+    btVector3 worldMin(-1000, -1000, -1000);
+    btVector3 worldMax(1000, 1000, 1000);
+    overlapping_pair_cache = new btAxisSweep3(worldMin, worldMax);
+
+    if (use_MCLP_solver)
+    {
+        btDantzigSolver* mlcp = new btDantzigSolver();
+        //btSolveProjectedGaussSeidel* mlcp = new btSolveProjectedGaussSeidel;
+        btMLCPSolver* solver = new btMLCPSolver(mlcp);
+        constraint_solver = solver;
+    }
+    else
+        constraint_solver = new btSequentialImpulseConstraintSolver();
+
+    dynamics_world = new btDiscreteDynamicsWorld(dispatcher, overlapping_pair_cache, constraint_solver, collision_configuration);
+
+    if (use_MCLP_solver)
+        dynamics_world->getSolverInfo().m_minimumSolverBatchSize = 1;//for direct solver it is better to have a small A matrix
+    else
+        dynamics_world->getSolverInfo().m_minimumSolverBatchSize = 128;//for direct solver, it is better to solve multiple objects together, small batches have high overhead
+
+    dynamics_world->getSolverInfo().m_globalCfm = 0.00001;
+    //m_dynamicsWorld->setGravity(btVector3(0,0,0));
+
+    gui_helper->createPhysicsDebugDrawer(dynamics_world);
+    int upAxis = 1;
+    gui_helper->setUpAxis(upAxis);
 }

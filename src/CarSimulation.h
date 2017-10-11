@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "Car.h"
 
 #include "btBulletDynamicsCommon.h"
@@ -18,6 +20,7 @@
 #include "../CommonInterfaces/CommonGraphicsAppInterface.h"
 
 
+
 class CarSimulation
 {
 public:
@@ -32,13 +35,40 @@ public:
     void addDefaultFloor();
     void addDefaultRigidBody();
 
-    // to do
-    void addRigidBody();
+    // Note: for any rigid body, mass = 0 also means static object
 
-    void stepSimulation(float deltaTime);
+    int addMeshRigidBody(const std::vector<float> & vertex_data,
+                         const std::vector<unsigned int> & face_index,
+                         const btTransform & transform,
+                         float mass = 0);
+
+    int addMeshRigidBody(const float * vertex_data,
+                         unsigned int vcount, // vertex_num * 3
+                         const unsigned int * face_index,
+                         unsigned int fcount, // face_num * 3
+                         const btTransform & transform,
+                         float mass = 0);
+
+    int addBoxRigidBody(const btVector3 & half_extents, const btTransform & transform, float mass = 0);
+
+    // Note: central axis aligned with the Y axis
+    int addCylinderRigidBody(const btVector3 & half_extents, const btTransform & transform, float mass = 0);
+
+    int addSphereRigidBody(float radius, const btTransform & transform, float mass = 0);
+
+    unsigned int getCarNum() const;
+    std::vector<Car *> & getCarPtrs();
+    const std::vector<Car *> & getCarPtrs() const;
+
+    // Note: first btTransform for car chassis, and the following four btTransform for car wheels
+    std::vector<btTransform> getCarTransform(unsigned int idx) const;
+
+    std::vector<std::pair<int, btTransform>> getAllRigidBodyTransforms() const;
+    
+    void stepSimulation(float delta_time);
     void clientResetScene();
 
-    btRigidBody * localCreateRigidBody(btScalar mass, const btTransform& worldTransform, btCollisionShape* colSape);
+    btRigidBody * localCreateRigidBody(btScalar mass, const btTransform & world_transform, btCollisionShape* col_shape);
     
     void specialKeyboard(int key, int x, int y);
     void specialKeyboardUp(int key, int x, int y);
@@ -48,7 +78,7 @@ public:
     bool mouseButtonCallback(int button, int state, float x, float y);
 
     void displayCallback();
-    void physicsDebugDraw(int debugFlags);
+    void physicsDebugDraw(int debug_flags);
     void renderScene();
     
     void generateGraphicsObjects();
@@ -59,29 +89,26 @@ public:
 
 private:
     void initDynamicsWorld();
+    btIndexedMesh constructIndexMesh(const float * vertices, int vcount, const unsigned int * faces, int fcount);
 
 private:
-    GUIHelperInterface * m_guiHelper;
+    GUIHelperInterface * gui_helper;
 
-    btVector3 m_cameraPosition = {30, 30, 30};
-    float m_cameraHeight = 4.0f;
-    float m_minCameraDistance = 3.0f;
-    float m_maxCameraDistance = 10.0f;
-    bool m_useDefaultCamera = false;
+    btVector3 camera_position = {30, 30, 30};
+    float camera_height = 4.0f;
+    float min_camera_distance = 3.0f;
+    float max_camera_distance = 10.0f;
+    bool use_default_camera = false;
 
-    bool useMCLPSolver = true;
+    bool use_MCLP_solver = true;
 
-    btAlignedObjectArray<btCollisionShape*> m_collisionShapes;
+    btAlignedObjectArray<btCollisionShape*> collision_shapes;
 
-    btDiscreteDynamicsWorld * m_dynamicsWorld = nullptr;
-    btBroadphaseInterface *	m_overlappingPairCache = nullptr;
-    btCollisionDispatcher *	m_dispatcher = nullptr;
-    btConstraintSolver * m_constraintSolver = nullptr;
-    btDefaultCollisionConfiguration * m_collisionConfiguration = nullptr;
-    btTriangleIndexVertexArray * m_indexVertexArrays = nullptr;
+    btDiscreteDynamicsWorld * dynamics_world = nullptr;
+    btBroadphaseInterface *	overlapping_pair_cache = nullptr;
+    btCollisionDispatcher *	dispatcher = nullptr;
+    btConstraintSolver * constraint_solver = nullptr;
+    btDefaultCollisionConfiguration * collision_configuration = nullptr;
 
-    btAlignedObjectArray<Car *> cars;
-
-    btRigidBody * m_loadBody = nullptr;
-    btVector3	m_loadStartPos;
+    std::vector<Car *> cars;
 };

@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="源文件\ObjLoader">
+      <UniqueIdentifier>{85cd61a0-c50a-4f99-8ead-fad5cb629025}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main_opengl_single_example.cpp">
@@ -24,12 +27,33 @@
     <ClCompile Include="src\Car.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\ForkLiftCar.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CustomCar.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="include\Importers\ImportObjDemo\Wavefront2GLInstanceGraphicsShape.cpp">
+      <Filter>源文件\ObjLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="include\ThirdPartyLibs\Wavefront\tiny_obj_loader.cpp">
+      <Filter>源文件\ObjLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="include\Importers\ImportObjDemo\LoadMeshFromObj.cpp">
+      <Filter>源文件\ObjLoader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CarSimulation.h">
       <Filter>源文件</Filter>
     </ClInclude>
     <ClInclude Include="src\Car.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ForkLiftCar.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CustomCar.h">
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>

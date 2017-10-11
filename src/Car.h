@@ -1,61 +1,63 @@
 #pragma once
 
+#include <vector>
 #include "btBulletDynamicsCommon.h"
 #include "btBulletCollisionCommon.h"
 
+class GUIHelperInterface;
 class CarSimulation;
 
 class Car
 {
 public:
-    Car();
-    ~Car();
+    Car() = default;
+    virtual ~Car() = default;
 
-    void configToCarSimulation(CarSimulation * simulation, const btVector3 & init_pos);
+    virtual void configToCarSimulation(CarSimulation * simulation, const btVector3 & init_pos);
+    virtual bool keyboardCallback(int key, int state, bool is_shift_pressed);
 
     void update();
     void updateWheelTransformForRender(CarSimulation * simulation);
-    bool keyboardCallback(int key, int state, bool is_shift_pressed);
+    std::vector<btTransform> getCarTransform() const;
 
-    void lockLiftHinge();
-    void lockForkSlider();
+protected:
+    void setCarChassis(CarSimulation * simulation, const btVector3 & init_pos);
+    void setCarWheelForGraphics(GUIHelperInterface * m_guiHelper);
+    void setCarWheelForSimulation();
 
-private:
-    btRigidBody * m_carChassis = nullptr;
-    int m_wheelInstances[4] = { -1, -1, -1, -1 };
+protected:
+    btRigidBody * car_chassis = nullptr;
+    btCollisionShape * car_chassis_shape = nullptr;
 
-    btRigidBody * m_liftBody = nullptr;
-    btVector3	m_liftStartPos;
-    btHingeConstraint* m_liftHinge = nullptr;
+    btCollisionShape * wheel_shape = nullptr;
+    int wheel_instances[4] = { -1, -1, -1, -1 };
 
-    btRigidBody * m_forkBody = nullptr;
-    btVector3	m_forkStartPos;
-    btSliderConstraint* m_forkSlider = nullptr;
+    btRaycastVehicle::btVehicleTuning vehicle_tuning;
+    btVehicleRaycaster * vehicle_ray_caster = nullptr;
+    btRaycastVehicle * vehicle = nullptr;
 
-    btRaycastVehicle::btVehicleTuning m_tuning;
-    btVehicleRaycaster * m_vehicleRayCaster = nullptr;
-    btRaycastVehicle * m_vehicle = nullptr;
-    btCollisionShape * m_wheelShape = nullptr;
+    float max_motor_impulse = 4000.f;
+    float engine_force = 0.f;
+    float max_engine_force = 2000.f;
 
-    btScalar maxMotorImpulse = 4000.f;
-    float gEngineForce = 0.f;
+    float default_breaking_force = 10.f; 
+    float breaking_force = 100.f;
+    float max_breaking_force = 100.f;
 
-    float defaultBreakingForce = 10.f;
-    float gBreakingForce = 100.f;
+    float vehicle_steering = 0.f;
+    float steering_increment = 0.08f;
+    float steering_clamp = 0.6f;
 
-    float maxEngineForce = 1000.f;
-    float maxBreakingForce = 100.f;
+    float wheel_radius = 0.5f;
+    float wheel_width = 0.4f;
+    float wheel_height = 1.0f;
+    float wheel_friction = 1000;
 
-    float gVehicleSteering = 0.f;
-    float steeringIncrement = 0.08f;
-    float steeringClamp = 0.6f;
-    float wheelRadius = 0.5f;
-    float wheelWidth = 0.4f;
-    float wheelFriction = 1000;
-    float suspensionStiffness = 20.f;
-    float suspensionDamping = 2.3f;
-    float suspensionCompression = 4.4f;
-    float rollInfluence = 0.1f;
+    float suspension_stiffness = 20.f;
+    float suspension_damping = 2.3f;
+    float suspension_compression = 4.4f;
+    float suspension_rest_length = 0.6f;
 
-    btScalar suspensionRestLength =0.6f;
+    float roll_influence = 0.1f;
+    
 };
