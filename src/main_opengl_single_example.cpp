@@ -5,9 +5,8 @@
 
 #include "Car.h"
 #include "ForkLiftCar.h"
-#include "CustomCar.h"
-#include "CarSimulation.h"
 
+#include "CarSimulation.h"
 
 #include "OpenGLWindow/SimpleOpenGL3App.h"
 #include "OpenGLWindow/GLInstanceGraphicsShape.h"
@@ -91,14 +90,16 @@ int main(int argc, char* argv[])
 	
     Car fir_car;
     //fir_car.configToCarSimulation(example, btVector3(0, 0, 0));
+    
     Car sec_car;
+    sec_car.setFrontWheelXOffset(2.0);
+    sec_car.setFrontWheelZOffset(2.0);
+    sec_car.setBackWheelXOffset(1.0);
+    sec_car.setBackWheelZOffset(2.0);
     sec_car.configToCarSimulation(example, btVector3(5, 0, 0));
     
     ForkLiftCar fork_lift_car;
     fork_lift_car.configToCarSimulation(example, btVector3(10, 0, 0));
-
-    CustomCar custom_car("car_models/teapot.obj");
-    custom_car.configToCarSimulation(example, btVector3(0, 0, 0));
 
     /*
     btTransform box_tr;

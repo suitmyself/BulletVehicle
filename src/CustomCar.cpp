@@ -70,7 +70,7 @@ void CustomCar::setCustomCarChassis(CarSimulation * simulation, const btVector3 
     btTransform tr;
     tr.setIdentity();
     tr.setOrigin(init_pos);
-    car_chassis = simulation->localCreateRigidBody(800, tr, compound);
+    car_chassis = simulation->localCreateRigidBody(car_mass, tr, compound);
 
     car_chassis->setDamping(0.2, 0.2);
     car_chassis->setActivationState(DISABLE_DEACTIVATION); //never deactivate the vehicle

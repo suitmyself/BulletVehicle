@@ -30,9 +30,6 @@
     <ClCompile Include="src\ForkLiftCar.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\CustomCar.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="include\Importers\ImportObjDemo\Wavefront2GLInstanceGraphicsShape.cpp">
       <Filter>源文件\ObjLoader</Filter>
     </ClCompile>
@@ -51,9 +48,6 @@
       <Filter>源文件</Filter>
     </ClInclude>
     <ClInclude Include="src\ForkLiftCar.h">
-      <Filter>源文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CustomCar.h">
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -10,8 +10,11 @@ class CarSimulation;
 class Car
 {
 public:
-    Car() = default;
-    virtual ~Car() = default;
+    Car();
+    virtual ~Car();
+
+    Car(const Car &) = delete;
+    Car & operator = (const Car &) = delete;
 
     virtual void configToCarSimulation(CarSimulation * simulation, const btVector3 & init_pos);
     virtual bool keyboardCallback(int key, int state, bool is_shift_pressed);
@@ -19,6 +22,15 @@ public:
     void update();
     void updateWheelTransformForRender(CarSimulation * simulation);
     std::vector<btTransform> getCarTransform() const;
+
+    void setFrontWheelXOffset(float x_offset);
+    void setFrontWheelZOffset(float z_offset);
+    void setBackWheelXOffset(float x_offset);
+    void setBackWheelZOffset(float z_offset);
+
+    void setCarChassisTransform(const btTransform & chassis_transform);
+    void setCarChassisBoxShape(const btVector3 & half_extents);
+    void setCarChassisCustomShape(btCollisionShape * shape);
 
 protected:
     void setCarChassis(CarSimulation * simulation, const btVector3 & init_pos);
@@ -28,13 +40,23 @@ protected:
 protected:
     btRigidBody * car_chassis = nullptr;
     btCollisionShape * car_chassis_shape = nullptr;
+    bool is_default_chassis_shape = true;
+
+    btTransform car_chassis_transform; //default: <0, 1, 0>
 
     btCollisionShape * wheel_shape = nullptr;
     int wheel_instances[4] = { -1, -1, -1, -1 };
 
+    float front_wheel_x_offset = 0.f; //default: x_half_width_of_chassis - (0.3*wheel_width)
+    float front_wheel_z_offset = 0.f; //default: z_half_width_of_chassis - wheel_radius
+    float back_wheel_x_offset = 0.f;  //default: x_half_width_of_chassis - (0.3*wheel_width)
+    float back_wheel_z_offset = 0.f;  //default: z_half_width_of_chassis - wheel_radius
+
     btRaycastVehicle::btVehicleTuning vehicle_tuning;
     btVehicleRaycaster * vehicle_ray_caster = nullptr;
     btRaycastVehicle * vehicle = nullptr;
+
+    float car_mass = 800.f;
 
     float max_motor_impulse = 4000.f;
     float engine_force = 0.f;

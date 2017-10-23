@@ -8,8 +8,6 @@
 #define M_PI_2     1.57079632679489661923
 #define M_PI_4     0.785398163397448309616
 
-#define CUBE_HALF_EXTENTS 1
-
 static int rightIndex = 0;
 static int upIndex = 1;
 static int forwardIndex = 2;
@@ -19,23 +17,40 @@ static btVector3 wheelAxleCS(-1, 0, 0);
 
 //===============================================================================================
 
+Car::Car()
+{
+    this->car_chassis_transform.setIdentity();
+    this->car_chassis_transform.setOrigin(btVector3(0, 1, 0));
+}
+
+Car::~Car()
+{
+    delete car_chassis;
+
+    if (is_default_chassis_shape)
+        delete car_chassis_shape;
+
+    delete wheel_shape;
+    delete vehicle_ray_caster;
+    delete vehicle;
+}
+
 void Car::setCarChassis(CarSimulation * simulation, const btVector3 & init_pos)
 {
     //定义Car的组合体形状
     btCompoundShape* compound = new btCompoundShape();
 
-    //定义Car底盘的形状并添加
-    btTransform localTrans;
-    localTrans.setIdentity();
-    localTrans.setOrigin(btVector3(0, 1, 0));
+    //设置默认形状
+    if(car_chassis_shape == nullptr)
+        car_chassis_shape = new btBoxShape(btVector3(1.f, 0.5f, 2.f));
 
-    car_chassis_shape = new btBoxShape(btVector3(1.f, 0.5f, 2.f));
-    compound->addChildShape(localTrans, car_chassis_shape);
+    compound->addChildShape(car_chassis_transform, car_chassis_shape);
 
     btTransform tr;
     tr.setIdentity();
     tr.setOrigin(init_pos);
-    car_chassis = simulation->localCreateRigidBody(800, tr, compound);
+
+    car_chassis = simulation->localCreateRigidBody(car_mass, tr, compound);
 
     car_chassis->setDamping(0.2, 0.2);
     car_chassis->setActivationState(DISABLE_DEACTIVATION); //never deactivate the vehicle
@@ -66,18 +81,33 @@ void Car::setCarWheelForSimulation()
     float z_half_width = (aabb_max[2] - aabb_min[2]) / 2;
 
     bool isFrontWheel = true;
-    btVector3 connectionPointCS0(x_half_width - (0.3*wheel_width), wheel_height, z_half_width - wheel_radius);
-    vehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspension_rest_length, wheel_radius, vehicle_tuning, isFrontWheel);
 
-    connectionPointCS0 = btVector3(-x_half_width + (0.3*wheel_width), wheel_height, z_half_width - wheel_radius);
-    vehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspension_rest_length, wheel_radius, vehicle_tuning, isFrontWheel);
+    //front right wheel
+    btVector3 front_right_wheel_pos(front_wheel_x_offset, wheel_height, front_wheel_z_offset);
+    if (front_right_wheel_pos[0] == 0.f) front_right_wheel_pos[0] = x_half_width - 0.3*wheel_width;
+    if (front_right_wheel_pos[2] == 0.f) front_right_wheel_pos[2] = z_half_width - wheel_radius;
+
+    vehicle->addWheel(front_right_wheel_pos, wheelDirectionCS0, wheelAxleCS, suspension_rest_length, wheel_radius, vehicle_tuning, isFrontWheel);
+
+    //front left wheel
+    btVector3 front_left_wheel_pos(-front_wheel_x_offset, wheel_height, front_wheel_z_offset);
+    if (front_left_wheel_pos[0] == 0.f) front_left_wheel_pos[0] = -(x_half_width - 0.3*wheel_width);
+    if (front_left_wheel_pos[2] == 0.f) front_left_wheel_pos[2] = z_half_width - wheel_radius;
+    vehicle->addWheel(front_left_wheel_pos, wheelDirectionCS0, wheelAxleCS, suspension_rest_length, wheel_radius, vehicle_tuning, isFrontWheel);
 
     isFrontWheel = false;
-    connectionPointCS0 = btVector3(x_half_width + (0.3*wheel_width), wheel_height, -z_half_width + wheel_radius);
-    vehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspension_rest_length, wheel_radius, vehicle_tuning, isFrontWheel);
 
-    connectionPointCS0 = btVector3(-x_half_width - (0.3*wheel_width), wheel_height, -z_half_width + wheel_radius);
-    vehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspension_rest_length, wheel_radius, vehicle_tuning, isFrontWheel);
+    //back right wheel
+    btVector3 back_right_wheel_pos(back_wheel_x_offset, wheel_height, -back_wheel_z_offset);
+    if (back_right_wheel_pos[0] == 0.f) back_right_wheel_pos[0] = x_half_width - 0.3*wheel_width;
+    if (back_right_wheel_pos[2] == 0.f) back_right_wheel_pos[2] = -(z_half_width - wheel_radius);
+    vehicle->addWheel(back_right_wheel_pos, wheelDirectionCS0, wheelAxleCS, suspension_rest_length, wheel_radius, vehicle_tuning, isFrontWheel);
+
+    //back left wheel
+    btVector3 back_left_wheel_pos(-back_wheel_x_offset, wheel_height, -back_wheel_z_offset);
+    if (back_left_wheel_pos[0] == 0.f) back_left_wheel_pos[0] = -(x_half_width - 0.3*wheel_width);
+    if (back_left_wheel_pos[2] == 0.f)back_left_wheel_pos[2] = -(z_half_width - wheel_radius);
+    vehicle->addWheel(back_left_wheel_pos, wheelDirectionCS0, wheelAxleCS, suspension_rest_length, wheel_radius, vehicle_tuning, isFrontWheel);
 
     for (int i = 0; i < vehicle->getNumWheels(); i++)
     {
@@ -115,7 +145,6 @@ void Car::configToCarSimulation(CarSimulation * simulation, const btVector3 & in
 void Car::update()
 {
     int wheelIndex = 2;
-
     vehicle->applyEngineForce(engine_force, wheelIndex);
     vehicle->setBrake(breaking_force, wheelIndex);
 
@@ -169,6 +198,49 @@ std::vector<btTransform> Car::getCarTransform() const
     }
 
     return trans;
+}
+
+void Car::setFrontWheelXOffset(float x_offset)
+{
+    this->front_wheel_x_offset = x_offset;
+}
+
+void Car::setFrontWheelZOffset(float z_offset)
+{
+    this->front_wheel_z_offset = z_offset;
+}
+
+void Car::setBackWheelXOffset(float x_offset)
+{
+    this->back_wheel_x_offset = x_offset;
+}
+
+void Car::setBackWheelZOffset(float z_offset)
+{
+    this->back_wheel_z_offset = z_offset;
+}
+
+void Car::setCarChassisTransform(const btTransform & chassis_transform)
+{
+    car_chassis_transform = chassis_transform;
+}
+
+void Car::setCarChassisBoxShape(const btVector3 & half_extents)
+{
+    if (is_default_chassis_shape)
+        delete car_chassis_shape;
+
+    is_default_chassis_shape = false;
+    car_chassis_shape = new btBoxShape(half_extents);
+}
+
+void Car::setCarChassisCustomShape(btCollisionShape * shape)
+{
+    if (is_default_chassis_shape)
+        delete car_chassis_shape;
+
+    is_default_chassis_shape = false;
+    car_chassis_shape = shape;
 }
 
 bool Car::keyboardCallback(int key, int state, bool is_shift_pressed)

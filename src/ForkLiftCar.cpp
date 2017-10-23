@@ -38,11 +38,10 @@ void ForkLiftCar::setForkLiftCarChassis(CarSimulation * simulation, const btVect
     btCollisionShape* suppShape = new btBoxShape(btVector3(0.5f, 0.1f, 0.5f));
     compound->addChildShape(suppLocalTrans, suppShape);
 
-
     btTransform tr;
     tr.setIdentity();
     tr.setOrigin(init_pos);
-    car_chassis = simulation->localCreateRigidBody(800, tr, compound);
+    car_chassis = simulation->localCreateRigidBody(car_mass, tr, compound);
 
     //never deactivate the vehicle
     car_chassis->setActivationState(DISABLE_DEACTIVATION);
@@ -283,7 +282,6 @@ bool ForkLiftCar::keyboardCallback(int key, int state, bool is_shift_pressed)
     }
     return handled;
 }
-
 
 void ForkLiftCar::lockLiftHinge()
 {

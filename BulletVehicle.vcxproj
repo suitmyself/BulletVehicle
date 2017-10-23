@@ -250,14 +250,12 @@ vhacd_vs2010_x64_release.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</A
     <ClCompile Include="include\ThirdPartyLibs\Wavefront\tiny_obj_loader.cpp" />
     <ClCompile Include="src\Car.cpp" />
     <ClCompile Include="src\CarSimulation.cpp" />
-    <ClCompile Include="src\CustomCar.cpp" />
     <ClCompile Include="src\ForkLiftCar.cpp" />
     <ClCompile Include="src\main_opengl_single_example.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Car.h" />
     <ClInclude Include="src\CarSimulation.h" />
-    <ClInclude Include="src\CustomCar.h" />
     <ClInclude Include="src\ForkLiftCar.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
