@@ -303,11 +303,6 @@ bool CarSimulation::keyboardCallback(int key, int state)
             //generateGraphicsObjects();
             break;
         }
-
-        case B3G_F5:
-            handled = true;
-            use_default_camera = !use_default_camera;
-            break;
         default:
             break;
         }
@@ -471,10 +466,10 @@ void CarSimulation::clear()
 
 void CarSimulation::resetCamera()
 {
-    float dist = 18;
-    float pitch = -45;
-    float yaw = 32;
-    float targetPos[3] = { -0.33,-0.72,4.5 };
+    float dist = 60;
+    float pitch = 0;
+    float yaw = 70;
+    float targetPos[3] = { 0,0,0 };
     gui_helper->resetCamera(dist, pitch, yaw, targetPos[0], targetPos[1], targetPos[2]);
 }
 

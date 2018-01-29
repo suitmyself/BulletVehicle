@@ -45,23 +45,6 @@ static void OnMouseDown(int button, int state, float x, float y)
 	}
 }
 
-class LessDummyGuiHelper : public DummyGUIHelper
-{
-public:
-    LessDummyGuiHelper(CommonGraphicsApp * app)
-        :m_app(app)
-    {
-    }
-
-	virtual CommonGraphicsApp * getAppInterface()
-	{
-		return m_app;
-	}
-
-private:
-    CommonGraphicsApp * m_app;
-};
-
 void MyKeyboardCallback(int key, int state)
 {
     example->keyboardCallback(key, state);
@@ -85,7 +68,7 @@ int main(int argc, char* argv[])
 	//example = StandaloneExampleCreateFunc(options);
     example = new CarSimulation(&gui);
 
-    example->addDefaultFloor();
+    //example->addDefaultFloor();
     example->addDefaultRigidBody();
 	
     Car fir_car;
@@ -96,10 +79,10 @@ int main(int argc, char* argv[])
     sec_car.setFrontWheelZOffset(2.0);
     sec_car.setBackWheelXOffset(1.0);
     sec_car.setBackWheelZOffset(2.0);
-    sec_car.configToCarSimulation(example, btVector3(5, 0, 0));
+    sec_car.configToCarSimulation(example, btVector3(-5, 0, 0));
     
     ForkLiftCar fork_lift_car;
-    fork_lift_car.configToCarSimulation(example, btVector3(10, 0, 0));
+    fork_lift_car.configToCarSimulation(example, btVector3(55, 0, 0));
 
     /*
     btTransform box_tr;
@@ -118,17 +101,24 @@ int main(int argc, char* argv[])
     sphere_tr.setOrigin(btVector3(0, 0, -7));
     example->addSphereRigidBody(1, sphere_tr, 5);
 
-    GLInstanceGraphicsShape * glmesh = LoadMeshFromObj("car_models/teapot.obj", "");
+    GLInstanceGraphicsShape * glmesh = LoadMeshFromObj("car_models/scene_texture.obj", "");
+    //GLInstanceGraphicsShape * glmesh = LoadMeshFromObj("car_models/teapot.obj", "");
     //GLInstanceGraphicsShape * glmesh = LoadMeshFromObj("car_models/mount.blend1.obj", "");
     //GLInstanceGraphicsShape * glmesh = LoadMeshFromObj("car_models/Mountain.obj", "");
 
     vector<float> vertex_data;
     for (int i = 0; i < glmesh->m_vertices->size(); ++i)
     {
+        /*
         vertex_data.push_back(glmesh->m_vertices->at(i).xyzw[0]);
         //vertex_data.push_back(glmesh->m_vertices->at(i).xyzw[1] * 0.3 - 25.0);
         vertex_data.push_back(glmesh->m_vertices->at(i).xyzw[1]);
         vertex_data.push_back(glmesh->m_vertices->at(i).xyzw[2]);
+        */
+
+        vertex_data.push_back(glmesh->m_vertices->at(i).xyzw[0] * 100);
+        vertex_data.push_back(glmesh->m_vertices->at(i).xyzw[2] * 100 - 100);
+        vertex_data.push_back(glmesh->m_vertices->at(i).xyzw[1] * 100);
     }
 
     vector<unsigned int> face_index;
@@ -137,7 +127,7 @@ int main(int argc, char* argv[])
 
     btTransform mesh_tr;
     mesh_tr.setIdentity();
-    example->addMeshRigidBody(vertex_data, face_index, mesh_tr, 5.0);
+    example->addMeshRigidBody(vertex_data, face_index, mesh_tr, 0.0);
 
     example->generateGraphicsObjects();
 	example->resetCamera();

@@ -94,12 +94,6 @@ private:
 private:
     GUIHelperInterface * gui_helper;
 
-    btVector3 camera_position = {30, 30, 30};
-    float camera_height = 4.0f;
-    float min_camera_distance = 3.0f;
-    float max_camera_distance = 10.0f;
-    bool use_default_camera = false;
-
     bool use_MCLP_solver = true;
 
     btAlignedObjectArray<btCollisionShape*> collision_shapes;
